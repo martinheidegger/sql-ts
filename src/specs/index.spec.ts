@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from "vitest"
 
 // import 'jasmine'
 // import * as index from '../index'
@@ -6,8 +6,7 @@ import { describe, it, expect } from 'vitest'
 
 // const Mockindex = rewire<typeof index>('../index')
 
-it('should create a new database context, run the provided function and destroy', (done) => {
-})
+it("should create a new database context, run the provided function and destroy", (done) => {})
 
 // describe('index', () => {
 //   describe('toObject', () => {

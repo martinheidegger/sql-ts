@@ -1,33 +1,56 @@
-import { Knex } from 'knex'
-import { ColumnDefinition, TableDefinition } from './Adapters/AdapterInterface.js'
-import * as AdapterFactory from './AdapterFactory.js'
-import { Column, Config } from './Typings.js'
-import * as SharedTasks from './SharedTasks.js'
-import TypeMap from './TypeMap.js'
-import * as EnumTasks from './EnumTasks.js'
-import * as SchemaTasks from './SchemaTasks.js'
+import { Knex } from "knex"
+import {
+  ColumnDefinition,
+  TableDefinition,
+} from "./Adapters/AdapterInterface.js"
+import * as AdapterFactory from "./AdapterFactory.js"
+import { Column, Config } from "./Typings.js"
+import * as SharedTasks from "./SharedTasks.js"
+import TypeMap from "./TypeMap.js"
+import * as EnumTasks from "./EnumTasks.js"
+import * as SchemaTasks from "./SchemaTasks.js"
 
 /**
  * Returns all columns in a given Table using a knex context.
- * 
+ *
  * @export
  * @param {knex} db The knex config to use.
  * @param {TableDefinition} table The table to return columns for..
  * @param {Config} config The configuration to use.
- * @returns {Promise<Column[]>} 
+ * @returns {Promise<Column[]>}
  */
-export async function getColumnsForTable(db: Knex, table: TableDefinition, config: Config): Promise<Column[]> {
+export async function getColumnsForTable(
+  db: Knex,
+  table: TableDefinition,
+  config: Config,
+): Promise<Column[]> {
   const adapter = AdapterFactory.buildAdapter(db.client.dialect)
-  const columns = await adapter.getAllColumns(db, config, table.name, table.schema)
-  if (config.columnSortOrder === 'alphabetical') {
+  const columns = await adapter.getAllColumns(
+    db,
+    config,
+    table.name,
+    table.schema,
+  )
+  if (config.columnSortOrder === "alphabetical") {
     columns.sort((a, b) => a.name.localeCompare(b.name))
   }
-  return columns.map(column => ({
-      ...column,
-      propertyName: SharedTasks.convertCase(column.name.replace(/ /g,''), config.columnNameCasing),
-      propertyType: convertType(column, table, config, (db.client as Knex.Client).dialect),
-      optional: getOptionality(column, table, config)
-    } as Column))
+  return columns.map(
+    (column) =>
+      ({
+        ...column,
+        propertyName: SharedTasks.convertCase(
+          column.name.replace(/ /g, ""),
+          config.columnNameCasing,
+        ),
+        propertyType: convertType(
+          column,
+          table,
+          config,
+          (db.client as Knex.Client).dialect,
+        ),
+        optional: getOptionality(column, table, config),
+      }) as Column,
+  )
 }
 
 /**
@@ -39,16 +62,23 @@ export async function getColumnsForTable(db: Knex, table: TableDefinition, confi
  * @param {Config} config The configuration object.
  * @returns {boolean} The optionality of the specified column.
  */
-export function getOptionality(column: ColumnDefinition, table: TableDefinition, config: Config): boolean {
+export function getOptionality(
+  column: ColumnDefinition,
+  table: TableDefinition,
+  config: Config,
+): boolean {
   let optionality = config.globalOptionality
-  const columnName = generateFullColumnName(table.name, table.schema, column.name)
+  const columnName = generateFullColumnName(
+    table.name,
+    table.schema,
+    column.name,
+  )
   if (config.columnOptionality[columnName]) {
     optionality = config.columnOptionality[columnName]
   }
-  if (optionality == 'optional') {
+  if (optionality == "optional") {
     return true
-  }
-  else if (optionality == 'required') {
+  } else if (optionality == "required") {
     return false
   }
   return column.optional
@@ -56,16 +86,20 @@ export function getOptionality(column: ColumnDefinition, table: TableDefinition,
 
 /**
  * Generates the full column name comprised of the table, schema and column.
- * 
+ *
  * @export
  * @param {string} tableName The name of the table that contains the column.
  * @param {string} schemaName The name of the schema that contains the table.
  * @param {string} columnName The name of the column.
  * @returns {string} The full table name.
  */
-export function generateFullColumnName(tableName: string, schemaName: string | null, columnName: string): string {
+export function generateFullColumnName(
+  tableName: string,
+  schemaName: string | null,
+  columnName: string,
+): string {
   let result = tableName
-  if  (schemaName != null && schemaName !== '') {
+  if (schemaName != null && schemaName !== "") {
     result = `${schemaName}.${result}`
   }
   return `${result}.${columnName}`
@@ -81,11 +115,16 @@ export function generateFullColumnName(tableName: string, schemaName: string | n
  * @param dialect The dialect of the database.
  * @returns {string}
  */
- export function convertType(column: ColumnDefinition, table: TableDefinition, config: Config, dialect: string): string {
-  switch(column.columnType) {
-    case 'NumericEnum':
+export function convertType(
+  column: ColumnDefinition,
+  table: TableDefinition,
+  config: Config,
+  dialect: string,
+): string {
+  switch (column.columnType) {
+    case "NumericEnum":
       return convertNumericEnumType(column, config)
-    case 'StringEnum':
+    case "StringEnum":
       return convertStringEnumType(column)
     default:
       return convertStandardType(column, table, config, dialect)
@@ -102,18 +141,25 @@ export function generateFullColumnName(tableName: string, schemaName: string | n
  * @param dialect The dialect of the database.
  * @returns {string}
  */
- export function convertStandardType(column: ColumnDefinition, table: TableDefinition, config: Config, dialect: string): string {
+export function convertStandardType(
+  column: ColumnDefinition,
+  table: TableDefinition,
+  config: Config,
+  dialect: string,
+): string {
   const fullname = generateFullColumnName(table.name, table.schema, column.name)
-  
+
   let convertedType = null
   const overrides = config.typeOverrides
   const userTypeMap = config.typeMap
-  
+
   // Start with user config overrides.
   convertedType = overrides[fullname]
   // Then check the user config typemap.
   if (convertedType == null) {
-    convertedType = Object.keys(userTypeMap).find(t => userTypeMap[t].includes(column.type))
+    convertedType = Object.keys(userTypeMap).find((t) =>
+      userTypeMap[t].includes(column.type),
+    )
   }
 
   // Then the schema specific typemap.
@@ -121,18 +167,22 @@ export function generateFullColumnName(tableName: string, schemaName: string | n
     const resolvedDialect = SharedTasks.resolveAdapterName(dialect)
     const perDBTypeMap = TypeMap[resolvedDialect]
     if (perDBTypeMap != null) {
-      convertedType = Object.keys(perDBTypeMap).find(f => perDBTypeMap[f].includes(column.type))
+      convertedType = Object.keys(perDBTypeMap).find((f) =>
+        perDBTypeMap[f].includes(column.type),
+      )
     }
   }
-  
+
   // Then the global type map.
   if (convertedType == null) {
-    let globalMap = TypeMap['global']
-    convertedType = Object.keys(globalMap).find(f => globalMap[f].includes(column.type))
+    let globalMap = TypeMap["global"]
+    convertedType = Object.keys(globalMap).find((f) =>
+      globalMap[f].includes(column.type),
+    )
   }
 
   // Finally just any type.
-  return convertedType == null ? 'any' : convertedType
+  return convertedType == null ? "any" : convertedType
 }
 
 /**
@@ -143,7 +193,10 @@ export function generateFullColumnName(tableName: string, schemaName: string | n
  * @param {Config} config The configuration object.
  * @returns {string}
  */
-export function convertNumericEnumType(column:  ColumnDefinition, config: Config): string {
+export function convertNumericEnumType(
+  column: ColumnDefinition,
+  config: Config,
+): string {
   const enumName = EnumTasks.generateEnumName(column.type, config)
   if (column.enumSchema != null && config.schemaAsNamespace) {
     const schemaName = SchemaTasks.generateSchemaName(column.enumSchema)
@@ -160,6 +213,6 @@ export function convertNumericEnumType(column:  ColumnDefinition, config: Config
  * @param {Config} config The configuration object.
  * @returns {string}
  */
-export function convertStringEnumType(column:  ColumnDefinition): string {
-  return column.stringEnumValues.map(v => `'${v}'`).join(' | ')
+export function convertStringEnumType(column: ColumnDefinition): string {
+  return column.stringEnumValues.map((v) => `'${v}'`).join(" | ")
 }

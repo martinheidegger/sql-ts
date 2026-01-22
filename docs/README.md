@@ -8,13 +8,13 @@
 
 </div>
 
-Generate TypeScript types for tables and views in a SQL database. 
+Generate TypeScript types for tables and views in a SQL database.
 
 Includes comments from tables, views and columns for [supported providers](https://rmp135.github.io/sql-ts/#/?id=comments).
 
 Highly configurable: choose your own [naming](#interfacenameformat) and [casing schemes](#tablenamecasing), [add types](#typemap), [extend base types](#extends), [generating enums from table data](#table-generated-enums) and more.
 
-Supports the following databases: MySQL, Microsoft SQL Server, SQLite and Postgres courtesy of [knex](https://knexjs.org/). 
+Supports the following databases: MySQL, Microsoft SQL Server, SQLite and Postgres courtesy of [knex](https://knexjs.org/).
 
 <!-- panels:start -->
 
@@ -40,15 +40,15 @@ CREATE TABLE [dbo].[Employees](
 
 ```ts
 export interface CustomersEntity {
-  'CustomerID': string;
-  'CompanyName': string;
-  'ContactTitle'?: string | null;
+  CustomerID: string
+  CompanyName: string
+  ContactTitle?: string | null
 }
 export interface EmployeesEntity {
-  'EmployeeID'?: number;
-  'Name': string;
-  'BirthDate'?: Date | null;
-  'Photo'?: Buffer | null;
+  EmployeeID?: number
+  Name: string
+  BirthDate?: Date | null
+  Photo?: Buffer | null
 }
 ```
 
@@ -65,7 +65,7 @@ Install your relevant SQL driver. Refer to the [knex documentation](http://knexj
 
 For example `npm install mysql2`.
 
-Create a configuration file, for example `mysql.json`. This will mirror connection details from knex. 
+Create a configuration file, for example `mysql.json`. This will mirror connection details from knex.
 
 The most basic MySQL setup is below, modify as appropriate. Additional options can be applied by referring to the [Config](#config).
 
@@ -88,7 +88,7 @@ Run `npx @rmp135/sql-ts` with the path of the configuration file created above.
 
 `npx @rmp135/sql-ts -c ./mysql.json`
 
-The file will be exported with the filename `Database.ts` (or with the name specified by [filename](#filename)) at the current working directory. 
+The file will be exported with the filename `Database.ts` (or with the name specified by [filename](#filename)) at the current working directory.
 
 !> Warning: if this file exists, it will be overwritten.
 
@@ -101,16 +101,15 @@ Alternatively, use as a node module, importing the `Client` and chaining togethe
 Import the `Client` and create a configuration (see [config](#config)).
 
 ```js
-import { Client } from '@rmp135/sql-ts'
+import { Client } from "@rmp135/sql-ts"
 
-const config = { } // Config as before.
+const config = {} // Config as before.
 ```
 
 The most basic syntax is chaining `fromObject`, `fetchDatabase` and `toTypescript`.
 
 ```js
-const definition = await Client
-  .fromConfig(config)
+const definition = await Client.fromConfig(config)
   .fetchDatabase()
   .toTypescript()
 ```
@@ -118,8 +117,7 @@ const definition = await Client
 If you have a knex database already, you can omit the knex specific options and specify the connection here.
 
 ```js
-const definition = await Client
-  .fromConfig(config) // knex config omitted.
+const definition = await Client.fromConfig(config) // knex config omitted.
   .fetchDatabase(knexDb) // Pre-existing knex connection.
   .toTypescript()
 ```
@@ -127,16 +125,13 @@ const definition = await Client
 To output the database as an object for processing before converting to TypeScript use `toObject` and continue with `fromObject`.
 
 ```js
-const asObject = await Client
-  .fromConfig(config)
+const asObject = await Client.fromConfig(config)
   .fetchDatabase(knexDb)
   .toObject()
 
-// Process asObject here. 
+// Process asObject here.
 
-const definition = await Client
-  .fromObject(asObject, config)
-  .toTypescript()
+const definition = await Client.fromObject(asObject, config).toTypescript()
 ```
 
 To simplify processing, a series of mapping functions are available: `mapSchema`, `mapSchemas`, `mapTable`, `mapTables`, `mapColumn` and `mapColumns`. The plural versions operate on all of the specified object, the singular ones operate on a specifically named object. See [Object Name Format](#object-name-format).
@@ -144,17 +139,24 @@ To simplify processing, a series of mapping functions are available: `mapSchema`
 This is performed after the database definition has been fetched and the config options applied.
 
 ```js
-const definition = await Client
-  .fromConfig(config)
+const definition = await Client.fromConfig(config)
   .fetchDatabase()
-  .mapSchema('public', (schema) => { // Maps to schema with name public.
-    schema.namespaceName = 'new_name' // Change the output namespace name.
+  .mapSchema("public", (schema) => {
+    // Maps to schema with name public.
+    schema.namespaceName = "new_name" // Change the output namespace name.
     return schema // Return the mapped schema.
   })
-  .mapTables((table, schema) => ({...table, interfaceName: `${schema.name}${table.name}Table`})) // Change the interface name of all tables.
-  .mapColumn('public.users.name', (column, table, schema) => ({...column, optional: true })) // Change optionality of column named "name" in table "users" in schema "public".
+  .mapTables((table, schema) => ({
+    ...table,
+    interfaceName: `${schema.name}${table.name}Table`,
+  })) // Change the interface name of all tables.
+  .mapColumn("public.users.name", (column, table, schema) => ({
+    ...column,
+    optional: true,
+  })) // Change optionality of column named "name" in table "users" in schema "public".
   .toTypescript()
 ```
+
 ?> Note: Execution of the fetching and mapping functions are deferred until either `toTypescript` or `toObject` are called.
 
 ## Config
@@ -163,9 +165,11 @@ The configuration extends the [knex configuration](http://knexjs.org/#Installati
 
 <!-- panels:start -->
 <!-- div:title-panel -->
+
 ### tables
 
 <!-- div:left-panel -->
+
 Filter the tables to include only those specified. These must be in the format `schema.table`. See [Object Name Format](#object-name-format) for schema naming conventions.
 
 <!-- div:right-panel -->
@@ -195,17 +199,21 @@ Excluding a table takes precedence over including it. Specifying a table in both
   "client": "...",
   "connection": {},
   "excludedTables": [
-    "schema1.knex_migrations", 
-    "schema1.knex_migrations_lock", 
+    "schema1.knex_migrations",
+    "schema1.knex_migrations_lock",
     "schema2.android_metadata"
   ]
 }
 ```
+
 <!-- div:title-panel -->
+
 ### typeOverrides
+
 <!-- div:left-panel -->
 
-Override the types on a per column basis. This requires the full name of the column in the format `schema.table.column`. See [Object Name Format](#object-name-format) for schema naming conventions. 
+Override the types on a per column basis. This requires the full name of the column in the format `schema.table.column`. See [Object Name Format](#object-name-format) for schema naming conventions.
+
 <!-- div:right-panel -->
 
 ```json
@@ -220,12 +228,15 @@ Override the types on a per column basis. This requires the full name of the col
 ```
 
 <!-- div:title-panel -->
+
 ### typeMap
 
 <!-- div:left-panel -->
+
 Adds additional types to the type resolution. The order in which types are resolved is `typeOverrides` (see above), this `typeMap`, then the global TypeMap file before defaulting to `any`.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -238,12 +249,15 @@ Adds additional types to the type resolution. The order in which types are resol
 ```
 
 <!-- div:title-panel -->
+
 ### filename
 
 <!-- div:left-panel -->
+
 Specifies the filepath and name that the file should be saved as, in relation to the current working directory. Defaults to "Database". The .ts extension is not required.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -253,14 +267,17 @@ Specifies the filepath and name that the file should be saved as, in relation to
 ```
 
 <!-- div:title-panel -->
+
 ### interfaceNameFormat
 
 <!-- div:left-panel -->
-Specifies the format that the exported interface names will take. The token `${table}` will be replaced with the table name. 
+
+Specifies the format that the exported interface names will take. The token `${table}` will be replaced with the table name.
 
 Defaults to `${table}Entity`.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -268,17 +285,19 @@ Defaults to `${table}Entity`.
   "interfaceNameFormat": "${table}Model" // User becomes UserModel
 }
 ```
+
 <!-- div:title-panel -->
 
 ### enumNameFormat
 
 <!-- div:left-panel -->
 
-Specifices the format for exported enums will take. The token `${name}` will be replaced with the table name. 
+Specifices the format for exported enums will take. The token `${name}` will be replaced with the table name.
 
 Defaults to `${name}` (no change).
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -286,6 +305,7 @@ Defaults to `${name}` (no change).
   "enumNameFormat": "${name}Enum" // LogLevel becomes LogLevelEnum
 }
 ```
+
 <!-- div:title-panel -->
 
 ### enumNumericKeyFormat
@@ -297,6 +317,7 @@ Because enum keys cannot numeric, we must convert them before populating the int
 Defaults to `_${key}`.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -308,18 +329,22 @@ Defaults to `_${key}`.
 <!-- div:left-panel -->
 
 <!-- panels:end -->
+
 The following options concerns modifying the case values of certain elements.
 
 Valid case values are "pascal" for PascalCase, "camel" for camelCase, "lower" for lowercase and "upper" for UPPERCASE. If the value is empty, missing or invalid, no case conversion will be applied to value. Some values will be modified to be TypeScript safe, others are wrapped in quotes.
 
 <!-- panels:start -->
 <!-- div:title-panel -->
+
 ### tableNameCasing
 
 <!-- div:left-panel -->
-Determines the casing for table names 
+
+Determines the casing for table names
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -329,12 +354,15 @@ Determines the casing for table names
 ```
 
 <!-- div:title-panel -->
+
 ### columnNameCasing
 
 <!-- div:left-panel -->
+
 Determines the casing for column names.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -342,13 +370,17 @@ Determines the casing for column names.
   "columnNameCasing": "camel"
 }
 ```
+
 <!-- div:title-panel -->
+
 ### enumNameCasing
 
 <!-- div:left-panel -->
+
 Determines the casing for enum names. Any none alphanumeric charaters will be removed. If the enum starts with numbers, those numbers will be removed.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -358,12 +390,15 @@ Determines the casing for enum names. Any none alphanumeric charaters will be re
 ```
 
 <!-- div:title-panel -->
+
 ### enumKeyCasing
 
 <!-- div:left-panel -->
+
 Determines the casing for enum keys. Keys are wrapped in quotes to allow for any value, use ["index notation"] to reference keys with none alphanumeric values.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -373,12 +408,15 @@ Determines the casing for enum keys. Keys are wrapped in quotes to allow for any
 ```
 
 <!-- div:title-panel -->
+
 ### singularTableNames
 
 <!-- div:left-panel -->
+
 Uses the [pluralize](https://github.com/plurals/pluralize) library to attempt to singularise the table names. Defaults `false`.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -388,14 +426,17 @@ Uses the [pluralize](https://github.com/plurals/pluralize) library to attempt to
 ```
 
 <!-- div:title-panel -->
+
 ### schemaAsNamespace
 
 <!-- div:left-panel -->
+
 Specifies whether the table schema should be used as a namespace. The functionality differs between database providers. Defaults to `false`.
 
 See [Object Name Format](#object-name-format) for information on how schemas are read from different providers.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -405,9 +446,11 @@ See [Object Name Format](#object-name-format) for information on how schemas are
 ```
 
 <!-- div:title-panel -->
+
 ### schemas
 
 <!-- div:left-panel -->
+
 Specifies which schemas to import. If MySQL is connected to without specifying a database, this can be used to import from multiple databases. Default `[]` (all schemas).
 
 !> The default schema on Postgres is `public` which is a reserved keyword in TypeScript. You may need to use the `noImplicitUseStrict` flag when transpiling.
@@ -415,6 +458,7 @@ Specifies which schemas to import. If MySQL is connected to without specifying a
 See [Object Name Format](#object-name-format) for information on how schemas are read from different providers.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -424,32 +468,35 @@ See [Object Name Format](#object-name-format) for information on how schemas are
 ```
 
 <!-- div:title-panel -->
+
 ### additionalProperties
 
 <!-- div:left-panel -->
-Specifies additional properties to be assigned to the output TypeScript file. Key is in the format `schema.table` and the value is a list of raw strings. 
+
+Specifies additional properties to be assigned to the output TypeScript file. Key is in the format `schema.table` and the value is a list of raw strings.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
   "connection": {},
   "additionalProperties": {
-    "dbo.Table_1": [
-      "propertyOne: string",
-      "propertyTwo?: number | null"
-    ]
+    "dbo.Table_1": ["propertyOne: string", "propertyTwo?: number | null"]
   }
 }
 ```
 
 <!-- div:title-panel -->
+
 ### extends
 
 <!-- div:left-panel -->
+
 Specifies the superclass than should be applied to the generated interface. Key is in the format `schema.table` and the value is the extension to apply. The following would generate `export interface Table_1 extends Extension, AnotherExtension { }`
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -461,14 +508,17 @@ Specifies the superclass than should be applied to the generated interface. Key 
 ```
 
 <!-- div:title-panel -->
+
 ### template
 
 <!-- div:left-panel -->
-Specifies the [handlebars](https://handlebarsjs.com) template to use when creating the output TypeScript file relative to the current working directory. See [src/template.handlebars](https://github.com/rmp135/sql-ts/blob/master/src/template.handlebars) for the default template. 
+
+Specifies the [handlebars](https://handlebarsjs.com) template to use when creating the output TypeScript file relative to the current working directory. See [src/template.handlebars](https://github.com/rmp135/sql-ts/blob/master/src/template.handlebars) for the default template.
 
 See the below section on [templating](#templating) for more info on how to use the template.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -478,9 +528,11 @@ See the below section on [templating](#templating) for more info on how to use t
 ```
 
 <!-- div:title-panel -->
+
 ### globalOptionality
 
 <!-- div:left-panel -->
+
 Determines the optionality of all generated properties. Available options are `optional`, `required` and `dynamic`. Defaults to `dynamic`.
 
 - `optional`: The generated properties will be optional.
@@ -490,6 +542,7 @@ Determines the optionality of all generated properties. Available options are `o
 This can be used to create specific "read" interfaces by removing all optionality from columns.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -497,11 +550,13 @@ This can be used to create specific "read" interfaces by removing all optionalit
   "globalOptionality": "dynamic"
 }
 ```
+
 <!-- div:title-panel -->
 
 ### columnOptionality
 
 <!-- div:left-panel -->
+
 Determines the optionality on a per-column basis.
 
 Key is the fully qualified column name (see [Object Name Format](#object-name-format)) and the value is the optionality (see [Global Optionality](#globaloptionality)).
@@ -511,6 +566,7 @@ This option will override the global optionality setting of the specified proper
 Useful if the dynamic optionality detection is not working as intended.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -528,12 +584,14 @@ Useful if the dynamic optionality detection is not working as intended.
 ### columnSortOrder
 
 <!-- div:left-panel -->
+
 Determines the order that the columns are sorted when applied to the template. Available options are `source` and `alphabetical`. Defaults to `alphabetical`.
 
 - `source`: The order the columns are fetched from the database.
 - `alphabetical`: Alphabetical order based on column name.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -547,6 +605,7 @@ Determines the order that the columns are sorted when applied to the template. A
 ### tableEnums
 
 <!-- div:left-panel -->
+
 Defines tables to be used to generate enums.
 
 Enums can be defined by specifying the fully qualified table name (see [Object Name Format](#object-name-format)) as the key, and the key/value of the enum as the value.
@@ -555,25 +614,24 @@ Take the example on the right. This will select all records from the "dbo.LogLev
 
 **dbo.LogLevel**
 
-| ID | Level    |
-|----|----------|
-| 1  | Warning  |
-| 2  | Error    |
-| 3  | Info     |
-
+| ID  | Level   |
+| --- | ------- |
+| 1   | Warning |
+| 2   | Error   |
+| 3   | Info    |
 
 ```ts
 export enum LogLevel {
-  Warning = '1',
-  Error = '2',
-  Info = '3'
+  Warning = "1",
+  Error = "2",
+  Info = "3",
 }
-
 ```
 
 For further information, see [Table Generated Enums](#table-generated-enums).
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -586,16 +644,19 @@ For further information, see [Table Generated Enums](#table-generated-enums).
   }
 }
 ```
+
 <!-- div:title-panel -->
 
 ### custom
 
 <!-- div:left-panel -->
+
 A simple object that is can be used in the template. Useful for defining arbitrary values at runtime.
 
 The default template does not use this field, it requires modifying the template to your needs. The entire config is passed into the template and can be found via the `config.custom` key.
 
 <!-- div:right-panel -->
+
 ```json
 {
   "client": "...",
@@ -624,20 +685,20 @@ Take for example, a Log and LogLevel table. The Log table references LogLevel by
 
 **dbo.Log**
 
-| ID | Level | Message              |
-|----|-------|----------------------|
-| 1  | 1     | Verbose log.         | 
-| 2  | 3     | A warning log.       |
-| 3  | 3     | Another warning log. |
+| ID  | Level | Message              |
+| --- | ----- | -------------------- |
+| 1   | 1     | Verbose log.         |
+| 2   | 3     | A warning log.       |
+| 3   | 3     | Another warning log. |
 
 **dbo.LogLevel**
 
-| ID | Level    |
-|----|----------|
-| 1  | Verbose  |
-| 2  | Info     |
-| 3  | Warning  |
-| 4  | Error    |
+| ID  | Level   |
+| --- | ------- |
+| 1   | Verbose |
+| 2   | Info    |
+| 3   | Warning |
+| 4   | Error   |
 
 We can extract the LogLevels as enums using [tableEnums](#tableenums) and set the Log.Level column type using [typeOverrides](#typeOverrides).
 
@@ -659,34 +720,33 @@ This creates the following interface file.
 
 ```ts
 export interface LogEntity {
-  'ID'?: number;
-  'Level': LogLevel;
+  ID?: number
+  Level: LogLevel
 }
 export enum LogLevel {
-  'Verbose' = 1,
-  'Info' = 2,
-  'Warning' = 3,
-  'Error' = 4,
+  "Verbose" = 1,
+  "Info" = 2,
+  "Warning" = 3,
+  "Error" = 4,
 }
-
 ```
 
 Allowing for example, `log.LogLevel = LogLevel.Warning` which when persisted to the database will use the underlying ID as the value, keeping referential constraint intact.
 
 ## Comments
 
-Comments provided on tables, views and columns are imported into the template. 
+Comments provided on tables, views and columns are imported into the template.
 
 By default these will be inserted into the generated file as comments on interfaces and properties.
 
 Different database providers provide these comments in different ways.
 
-Provider   | Source
------------|---------------------------------------------
-MySQL      | "Comments" field
-SQL Server | Extended property with name "MS_Description"
-Postgres   | "Comment" field
-SQLite     | Not supported
+| Provider   | Source                                       |
+| ---------- | -------------------------------------------- |
+| MySQL      | "Comments" field                             |
+| SQL Server | Extended property with name "MS_Description" |
+| Postgres   | "Comment" field                              |
+| SQLite     | Not supported                                |
 
 ## Default Values
 
@@ -698,19 +758,18 @@ Fields without a default will return `null`.
 
 ## Object Name Format
 
-Objects are typically referred to using the pattern `{schema}.{table}.{column}`, or `{schema}.{table}` if the column is not required, or simply `{schema}` if only the schema is required. 
+Objects are typically referred to using the pattern `{schema}.{table}.{column}`, or `{schema}.{table}` if the column is not required, or simply `{schema}` if only the schema is required.
 
 Table and column are fairly obvious but schemas are used differently depending on the database provider. The below table lists how the schema is read for each provider.
 
-Provider   | Source
------------|-------------
-Postgres   | The schema that the table belongs to.
-SQL Server | The schema that the table belongs to.
-MySQL      | The database name.
-SQLite     | 'main'
+| Provider   | Source                                |
+| ---------- | ------------------------------------- |
+| Postgres   | The schema that the table belongs to. |
+| SQL Server | The schema that the table belongs to. |
+| MySQL      | The database name.                    |
+| SQLite     | 'main'                                |
 
 For example, column `ID` in table `Customer` in database `Live` in a MySQL would be referred to as `Live.Customer.ID`.
-
 
 ## Templating
 
@@ -737,8 +796,8 @@ The inputs to this file are as followed.
           {
             "name": "ID", // The original database column name.
             "type": "int", // The original database type.
-            "propertyName": "ID", // The computed Typescript property name 
-            "propertyType": "number", // The computed Typescript type 
+            "propertyName": "ID", // The computed Typescript property name
+            "propertyType": "number", // The computed Typescript type
             "nullable": false, // Whether the column is nullable.
             "optional": true, // Whether the column is optional for insertion (has a default value).
             "isEnum": false, // Whether the column is an enum type (currently only Postgres).
@@ -750,7 +809,7 @@ The inputs to this file are as followed.
       }
     ],
     "enums": [ // List of enums, including table defined.
-      { 
+      {
         "name": "Severity", // The original database enum name.
         "convertedName": "SeverityEnum", // The converted name of the enum.
         "schema": "dbo", // The schema the enum belongs to.
@@ -776,7 +835,7 @@ By default, sql-ts builds the configuration from an INSERT perspective. That is 
 
 However, this can cause issues when using the generated interface for passing around to other areas of an application that are requiring a concrete value.
 
-To resolve this, you can use the [optionality](#optionality), [filename](#filename) and [interfaceNameFormat](#interfacenameformat) config options to create read models in a separate database models file. 
+To resolve this, you can use the [optionality](#optionality), [filename](#filename) and [interfaceNameFormat](#interfacenameformat) config options to create read models in a separate database models file.
 
 ```json
 {
