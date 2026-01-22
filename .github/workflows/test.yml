@@ -15,8 +15,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          check-latest: false
-      - run: npx prettier@$(cat package.json | jq ".devDependencies.prettier" -r) -c .
+      - run: npm install
+      - run: npx run lint:fix
 
   run-tests:
     runs-on: ubuntu-latest
