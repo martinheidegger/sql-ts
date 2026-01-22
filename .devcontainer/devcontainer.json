@@ -11,6 +11,14 @@
       "moby": true,
       "installDockerComposeSwitch": true
     }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "github.vscode-github-actions"
+      ]
+    }
   }
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
