@@ -1,10 +1,6 @@
 {
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/**/*.spec.*"
-  ],
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.spec.*"],
   "compilerOptions": {
     "target": "ES2022",
     "declaration": true,

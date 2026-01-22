@@ -1,9 +1,12 @@
-import { Knex } from 'knex'
-import { ColumnDefinition, TableDefinition } from './Adapters/AdapterInterface.js'
+import { Knex } from "knex"
+import {
+  ColumnDefinition,
+  TableDefinition,
+} from "./Adapters/AdapterInterface.js"
 
 /**
  * The configuration file for creating new databases.
- * 
+ *
  * @export
  * @interface Config
  * @extends {knex.Config}
@@ -23,17 +26,16 @@ export interface Config extends Knex.Config {
   schemas?: string[]
   template?: string
   enumNumericKeyFormat?: string
-  tableEnums?: Record<string, { key: string, value: string }>
-  globalOptionality?: 'optional' | 'required' | 'dynamic'
-  columnOptionality?: Record<string, 'optional' | 'required' | 'dynamic'>
-  columnSortOrder?: 'source' | 'alphabetical'
+  tableEnums?: Record<string, { key: string; value: string }>
+  globalOptionality?: "optional" | "required" | "dynamic"
+  columnOptionality?: Record<string, "optional" | "required" | "dynamic">
+  columnSortOrder?: "source" | "alphabetical"
   typeMap?: Record<string, string[]>
   typeOverrides?: Record<string, string>
   additionalProperties?: Record<string, string[]>
   extends?: Record<string, string>
   custom?: Record<string, any>
-} 
-
+}
 
 export interface SchemaDefinition {
   name: string
@@ -47,7 +49,7 @@ export interface Schema extends SchemaDefinition {
 
 /**
  * The JSON definition of a table with additional properties
- * 
+ *
  * @export
  * @interface Table
  */
@@ -63,13 +65,13 @@ export interface Table extends TableDefinition {
 
 /**
  * The JSON definition of a database.
- * 
+ *
  * @export
  * @interface Database
  */
 export interface Database {
   schemas: Schema[]
-  custom?: Record<string,any>
+  custom?: Record<string, any>
 }
 
 /**

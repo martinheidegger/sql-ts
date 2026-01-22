@@ -1,7 +1,11 @@
-import { Knex } from 'knex'
-import { Config } from '../index.js'
-import { TableDefinition, ColumnDefinition, EnumDefinition } from './AdapterInterface.js'
-import * as SharedAdapterTasks from './SharedAdapterTasks.js'
+import { Knex } from "knex"
+import { Config } from "../index.js"
+import {
+  TableDefinition,
+  ColumnDefinition,
+  EnumDefinition,
+} from "./AdapterInterface.js"
+import * as SharedAdapterTasks from "./SharedAdapterTasks.js"
 
 export default {
   async getAllEnums(db: Knex, config: Config): Promise<EnumDefinition[]> {
@@ -20,11 +24,16 @@ export default {
           UNION
           SELECT TOP 1 value FROM fn_listextendedproperty (NULL, 'schema', TABLE_SCHEMA, 'view', TABLE_NAME, null, null) EP WHERE EP.name = 'MS_Description'
         ) EP 
-      ${schemas.length > 0 ? `WHERE TABLE_SCHEMA IN (${schemas.map(_ => '?').join(',')})` : ''}`
+      ${schemas.length > 0 ? `WHERE TABLE_SCHEMA IN (${schemas.map((_) => "?").join(",")})` : ""}`
     return await db.raw(sql, schemas)
   },
-  
-  async getAllColumns(db: Knex, config: Config, table: string, schema: string): Promise<ColumnDefinition[]> {
+
+  async getAllColumns(
+    db: Knex,
+    config: Config,
+    table: string,
+    schema: string,
+  ): Promise<ColumnDefinition[]> {
     const sql = `
       SELECT
 				COLUMN_NAME as name,
@@ -49,27 +58,28 @@ export default {
         WHERE c.TABLE_NAME = :table
         AND c.TABLE_SCHEMA = :schema
       `
-    return (await db.raw(sql, { table, schema }))
-      .map((c: MSSQLColumn) => (
-        {
+    return (await db.raw(sql, { table, schema })).map(
+      (c: MSSQLColumn) =>
+        ({
           name: c.name,
           type: c.type,
-          nullable: c.isNullable === 'YES', 
-          optional: c.isOptional === 1 || c.isNullable == 'YES',
-          columnType: 'Standard',
+          nullable: c.isNullable === "YES",
+          optional: c.isOptional === 1 || c.isNullable == "YES",
+          columnType: "Standard",
           isPrimaryKey: c.isPrimaryKey == 1,
           comment: c.comment,
           defaultValue: c.defaultValue?.toString() ?? null,
-      }) as ColumnDefinition)
-  }
+        }) as ColumnDefinition,
+    )
+  },
 }
 
 interface MSSQLColumn {
-  name: string,
-  type: string,
-  isOptional: 1 | 0,
-  isNullable: 'YES' | 'NO',
-  isPrimaryKey: 1 | 0,
-  comment: string,
+  name: string
+  type: string
+  isOptional: 1 | 0
+  isNullable: "YES" | "NO"
+  isPrimaryKey: 1 | 0
+  comment: string
   defaultValue: string | null
 }

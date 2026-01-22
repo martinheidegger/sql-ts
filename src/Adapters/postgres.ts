@@ -1,8 +1,12 @@
-import { Knex } from 'knex'
-import { uniqBy } from 'lodash-es'
-import { Config } from '../index.js'
-import { TableDefinition, ColumnDefinition, EnumDefinition } from './AdapterInterface.js'
-import * as SharedAdapterTasks from './SharedAdapterTasks.js'
+import { Knex } from "knex"
+import { uniqBy } from "lodash-es"
+import { Config } from "../index.js"
+import {
+  TableDefinition,
+  ColumnDefinition,
+  EnumDefinition,
+} from "./AdapterInterface.js"
+import * as SharedAdapterTasks from "./SharedAdapterTasks.js"
 
 export default {
   async getAllEnums(db: Knex, config: Config): Promise<EnumDefinition[]> {
@@ -15,32 +19,38 @@ export default {
     FROM pg_type
     JOIN pg_enum ON pg_enum.enumtypid = pg_type.oid
     JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
-    ${config.schemas.length > 0 ? ` WHERE pg_namespace.nspname = ANY(:schemas)` : ''}
+    ${config.schemas.length > 0 ? ` WHERE pg_namespace.nspname = ANY(:schemas)` : ""}
     `
-    const ungroupedEnums = (await db.raw(sql, { schemas: config.schemas }) as { rows: PostgresEnum[] }).rows
+    const ungroupedEnums = (
+      (await db.raw(sql, { schemas: config.schemas })) as {
+        rows: PostgresEnum[]
+      }
+    ).rows
 
-    const groupedEnums: EnumDefinition[] = uniqBy(ungroupedEnums, e => `${e.name}.${e.schema}`)
-      .map(row => ({
-        name: row.name,
-        schema: row.schema,
-        values: Object.fromEntries(
-          ungroupedEnums
-            .filter(e => e.schema == row.schema && e.name == row.name)
-            .sort((a, b) => a.order - b.order)
-            .map(e => [e.value, e.value])
-        )
-      }))
+    const groupedEnums: EnumDefinition[] = uniqBy(
+      ungroupedEnums,
+      (e) => `${e.name}.${e.schema}`,
+    ).map((row) => ({
+      name: row.name,
+      schema: row.schema,
+      values: Object.fromEntries(
+        ungroupedEnums
+          .filter((e) => e.schema == row.schema && e.name == row.name)
+          .sort((a, b) => a.order - b.order)
+          .map((e) => [e.value, e.value]),
+      ),
+    }))
     const tableEnums = await SharedAdapterTasks.getTableEnums(db, config)
     return groupedEnums.concat(tableEnums)
   },
-  
+
   async getAllTables(db: Knex, schemas: string[]): Promise<TableDefinition[]> {
     const sql = `
       WITH schemas AS (
         SELECT nspname AS name, oid AS oid
         FROM pg_namespace
         WHERE nspname <> 'information_schema' AND nspname NOT LIKE 'pg_%'
-        ${schemas.length > 0 ? ` AND nspname = ANY(:schemas)` : ''}
+        ${schemas.length > 0 ? ` AND nspname = ANY(:schemas)` : ""}
         )
         SELECT schemas.name AS schema,
             pg_class.relname AS name,
@@ -50,11 +60,18 @@ export default {
         WHERE pg_class.relkind IN ('r', 'p', 'v', 'm')
         AND NOT pg_class.relispartition
     `
-    const results = await db.raw(sql, { schemas }) as { rows: TableDefinition[] }
+    const results = (await db.raw(sql, { schemas })) as {
+      rows: TableDefinition[]
+    }
     return results.rows
   },
 
-  async getAllColumns(db: Knex, config: Config, table: string, schema: string): Promise<ColumnDefinition[]> {
+  async getAllColumns(
+    db: Knex,
+    config: Config,
+    table: string,
+    schema: string,
+  ): Promise<ColumnDefinition[]> {
     const sql = `
       SELECT
         typns.nspname typeschema,
@@ -86,39 +103,39 @@ export default {
       AND pg_class.relname = :table
       AND pg_namespace.nspname = :schema
     `
-    return (await db.raw(sql, { table, schema }))
-      .rows
-      .map((c: PostgresColumn) => (
-        {
+    return (await db.raw(sql, { table, schema })).rows.map(
+      (c: PostgresColumn) =>
+        ({
           name: c.name,
           type: c.typname,
           nullable: !c.notnullable,
           optional: c.hasdefault || !c.notnullable,
-          columnType: c.typcategory == 'E' ? 'NumericEnum' : 'Standard',
+          columnType: c.typcategory == "E" ? "NumericEnum" : "Standard",
           isPrimaryKey: c.isprimarykey == 1,
           enumSchema: c.typeschema,
           comment: c.comment,
           defaultValue: c.defaultvalue?.toString() ?? null,
-        }) as ColumnDefinition)
-  }
+        }) as ColumnDefinition,
+    )
+  },
 }
 
 interface PostgresColumn {
-  name: string,
-  type: string,
-  notnullable: boolean,
-  hasdefault: boolean,
-  typcategory: string,
-  typeschema: string,
-  typname: string,
-  isprimarykey: number,
-  comment: string,
+  name: string
+  type: string
+  notnullable: boolean
+  hasdefault: boolean
+  typcategory: string
+  typeschema: string
+  typname: string
+  isprimarykey: number
+  comment: string
   defaultvalue: string | null
 }
 
 interface PostgresEnum {
-  schema: string,
-  name: string,
-  value: string,
+  schema: string
+  name: string
+  value: string
   order: number
 }

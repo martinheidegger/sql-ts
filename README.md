@@ -8,14 +8,13 @@
 
 </div>
 
-Generate TypeScript types for tables and views in a SQL database. 
+Generate TypeScript types for tables and views in a SQL database.
 
 Includes comments from tables, views and columns for [supported providers](https://rmp135.github.io/sql-ts/#/?id=comments).
 
 Highly configurable: choose your own [naming](https://rmp135.github.io/sql-ts/#/?id=interfacenameformat) and [casing schemes](https://rmp135.github.io/sql-ts/#/?id=tablenamecasing), [add types](https://rmp135.github.io/sql-ts/#/?id=typemap), [extend base types](https://rmp135.github.io/sql-ts/#/?id=extends), and more.
 
 Supports the following database providers: MySQL, Microsoft SQL Server, SQLite and Postgres.
-
 
 ```sql
 CREATE TABLE [dbo].[Employees](
@@ -28,16 +27,16 @@ CREATE TABLE [dbo].[Employees](
 
 ```ts
 export interface EmployeesEntity {
-  'EmployeeID'?: number;
-  'Name': string;
-  'BirthDate'?: Date | null;
-  'Photo'?: Buffer | null;
+  EmployeeID?: number
+  Name: string
+  BirthDate?: Date | null
+  Photo?: Buffer | null
 }
 ```
+
 ## Documentation
 
-Full documentation with all configuration options and node APIs are available at https://rmp135.github.io/sql-ts/. 
-
+Full documentation with all configuration options and node APIs are available at https://rmp135.github.io/sql-ts/.
 
 ## Installation
 
@@ -58,7 +57,7 @@ The most basic MySQL setup is below, modify as appropriate. Additional options c
     "host": "localhost",
     "user": "user",
     "password": "password",
-    "database" : "my_database"
+    "database": "my_database"
   }
 }
 ```
@@ -71,9 +70,8 @@ Run `npx @rmp135/sql-ts` with the path of the configuration file created above.
 
 `npx @rmp135/sql-ts -c ./mysql.json`
 
-The file will be exported with the filename `Database.ts` (or with the name specified via the [filename](https://rmp135.github.io/sql-ts/#/?id=filename) config option) at the current working directory. 
+The file will be exported with the filename `Database.ts` (or with the name specified via the [filename](https://rmp135.github.io/sql-ts/#/?id=filename) config option) at the current working directory.
 
 ### Node Module
 
 For finer grained control of the exported types, you can use the node API. See how in the [documentation](https://rmp135.github.io/sql-ts/#/?id=node-module).
-
