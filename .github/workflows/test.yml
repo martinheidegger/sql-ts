@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 24
       - run: npm install
-      - run: npx run lint:fix
+      - run: npm run lint:fix
 
   run-tests:
     runs-on: ubuntu-latest
