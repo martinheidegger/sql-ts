@@ -1,20 +1,20 @@
-import { AdapterInterface } from './Adapters/AdapterInterface.js'
-import { resolveAdapterName } from './SharedTasks.js'
-import mysql from './Adapters/mysql.js'
-import mssql from './Adapters/mssql.js'
-import postgres from './Adapters/postgres.js'
-import sqlite from './Adapters/sqlite.js'
+import { AdapterInterface } from "./Adapters/AdapterInterface.js"
+import { resolveAdapterName } from "./SharedTasks.js"
+import mysql from "./Adapters/mysql.js"
+import mssql from "./Adapters/mssql.js"
+import postgres from "./Adapters/postgres.js"
+import sqlite from "./Adapters/sqlite.js"
 
 const adapters: Record<string, AdapterInterface> = {
-  'mysql': mysql,
-  'mssql': mssql,
-  'postgres': postgres,
-  'sqlite': sqlite
+  mysql: mysql,
+  mssql: mssql,
+  postgres: postgres,
+  sqlite: sqlite,
 }
 
 /**
  * Returns an AdapterInterface that matches the dialect.
- * 
+ *
  * @export
  * @param {string} adapterName The name of SQL adapter that should be returned.
  * @returns {AdapterInterface} The adapter for connecting to a SQL database.

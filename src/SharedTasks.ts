@@ -1,4 +1,4 @@
-import { camelCase, pascalCase } from 'change-case'
+import { camelCase, pascalCase } from "change-case"
 
 /**
  * Converts the casing of a string.
@@ -10,13 +10,13 @@ import { camelCase, pascalCase } from 'change-case'
  */
 export function convertCase(name: string, caseType: string) {
   switch (caseType) {
-    case 'pascal':
+    case "pascal":
       return pascalCase(name, { mergeAmbiguousCharacters: true })
-    case 'camel':
+    case "camel":
       return camelCase(name, { mergeAmbiguousCharacters: true })
-    case 'lower':
+    case "lower":
       return name.toLowerCase()
-    case 'upper':
+    case "upper":
       return name.toUpperCase()
     default:
       return name
@@ -25,16 +25,16 @@ export function convertCase(name: string, caseType: string) {
 
 /**
  * Resolves a common adapter name from an alias.
- * 
+ *
  * @param dialect The ambiguous adapter name.
  * @returns The resolved dialect name.
  */
 export function resolveAdapterName(dialect: string) {
   const aliases = {
-    'postgresql' : 'postgres',
-    'pg' : 'postgres',
-    'sqlite3' : 'sqlite',
-    'mysql2': 'mysql'
+    postgresql: "postgres",
+    pg: "postgres",
+    sqlite3: "sqlite",
+    mysql2: "mysql",
   }
   return aliases[dialect] ?? dialect
 }

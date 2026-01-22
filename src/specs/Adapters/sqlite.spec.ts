@@ -1,12 +1,16 @@
-import { describe, expect, vi, it, beforeAll } from 'vitest'
-import * as SharedAdapterTasks from '../../Adapters/SharedAdapterTasks'
-import sqlite from '../../Adapters/sqlite'
-import knex, { Knex } from 'knex'
-import { Config } from '../../Typings'
-import { EnumDefinition, TableDefinition, ColumnDefinition } from '../../Adapters/AdapterInterface'
-import { beforeEach } from 'node:test'
+import { describe, expect, vi, it, beforeAll } from "vitest"
+import * as SharedAdapterTasks from "../../Adapters/SharedAdapterTasks"
+import sqlite from "../../Adapters/sqlite"
+import knex, { Knex } from "knex"
+import { Config } from "../../Typings"
+import {
+  EnumDefinition,
+  TableDefinition,
+  ColumnDefinition,
+} from "../../Adapters/AdapterInterface"
+import { beforeEach } from "node:test"
 
-vi.mock('../../Adapters/SharedAdapterTasks')
+vi.mock("../../Adapters/SharedAdapterTasks")
 
 let db: Knex
 
@@ -16,11 +20,11 @@ beforeEach(() => {
 
 beforeAll(async () => {
   const config = {
-    client: 'better-sqlite3',
+    client: "better-sqlite3",
     useNullAsDefault: true,
     connection: {
-      filename: ':memory:'
-    }
+      filename: ":memory:",
+    },
   }
 
   db = knex(config as Config)
@@ -39,87 +43,92 @@ beforeAll(async () => {
 `)
 })
 
-describe('getAllTables', () => {
-  it('should return all tables', async () => {
+describe("getAllTables", () => {
+  it("should return all tables", async () => {
     const tables = await sqlite.getAllTables(db, [])
     expect(tables).toEqual<TableDefinition[]>([
       {
-        name: 'table_one',
-        schema: 'main',
-        comment: ''
+        name: "table_one",
+        schema: "main",
+        comment: "",
       },
       {
-        name: 'table_two',
-        schema: 'main',
-        comment: ''
+        name: "table_two",
+        schema: "main",
+        comment: "",
       },
     ])
   })
 })
 
-describe('getAllColumns', () => {
-  it('should return all columns for specified table', async () => {
-    const tables = await sqlite.getAllColumns(db, {}, 'table_one', '')
+describe("getAllColumns", () => {
+  it("should return all columns for specified table", async () => {
+    const tables = await sqlite.getAllColumns(db, {}, "table_one", "")
     expect(tables).toEqual<ColumnDefinition[]>([
       {
-        name: 'id',
-        columnType: 'Standard',
-        comment: '',
+        name: "id",
+        columnType: "Standard",
+        comment: "",
         defaultValue: null,
         isPrimaryKey: true,
         nullable: false,
         optional: true,
-        type: 'integer'
+        type: "integer",
       },
       {
-        columnType: 'Standard',
-        comment: '',
-        defaultValue: 'def_val',
+        columnType: "Standard",
+        comment: "",
+        defaultValue: "def_val",
         isPrimaryKey: false,
-        name: 'name',
+        name: "name",
         nullable: true,
         optional: true,
-        type: 'text',
+        type: "text",
       },
       {
-        columnType: 'Standard',
-        comment: '',
+        columnType: "Standard",
+        comment: "",
         defaultValue: null,
         isPrimaryKey: false,
-        name: 'numcol',
+        name: "numcol",
         nullable: true,
         optional: true,
-        type: 'numeric',
+        type: "numeric",
       },
     ])
   })
 })
 
-describe('getAllEnums', () => {
-  it('should return only table based schemas', async () => {
+describe("getAllEnums", () => {
+  it("should return only table based schemas", async () => {
     const db = {} as unknown as Knex
-    const config: Config = { }
+    const config: Config = {}
 
-    var mockedGetTableEnums = vi.mocked(SharedAdapterTasks.getTableEnums).mockResolvedValue([{
-      name: 'table_one',
-      schema: 'schema_one',
-      values: {
-        enum_column: 'enum_one'
-      }
-    }])
-    
+    var mockedGetTableEnums = vi
+      .mocked(SharedAdapterTasks.getTableEnums)
+      .mockResolvedValue([
+        {
+          name: "table_one",
+          schema: "schema_one",
+          values: {
+            enum_column: "enum_one",
+          },
+        },
+      ])
+
     const enums = await sqlite.getAllEnums(db, config)
 
     expect(mockedGetTableEnums).toHaveBeenCalledWith(db, config)
-    
+
     expect(enums.length).toEqual(1)
-    expect(enums).toEqual<EnumDefinition[]>([{
-      name: 'table_one',
-      schema: 'schema_one',
-      values: {
-        enum_column: 'enum_one'
-      }
-    }])
+    expect(enums).toEqual<EnumDefinition[]>([
+      {
+        name: "table_one",
+        schema: "schema_one",
+        values: {
+          enum_column: "enum_one",
+        },
+      },
+    ])
   })
 })
-
