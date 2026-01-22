@@ -1,16 +1,16 @@
 {
-  "name": "@rmp135/sql-ts",
+  "name": "@leichtgewicht/sql-ts",
   "version": "2.2.0",
   "main": "./dist/index.js",
   "license": "MIT",
-  "description": "Generate TypeScript definitions from database schemas.",
+  "description": "[Fork] Generate TypeScript definitions from database schemas.",
   "bin": {
     "sql-ts": "bin/sql-ts"
   },
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rmp135/sql-ts.git"
+    "url": "git+https://github.com/martinheidegger/sql-ts.git"
   },
   "author": {
     "name": "Ryan Poole"
